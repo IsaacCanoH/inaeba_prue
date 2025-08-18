@@ -2,7 +2,7 @@ import { db } from "../../db/indexedDB";
 import { encryptData, decryptData } from "../../utils/cryptoUtils";
 import { saveSecureData } from "../security/saveDataService";
 
-const API_URL = "http://localhost:3000/api/inicidencia";
+const API_URL = "https://backend-pwa-b7qy.onrender.com/api/inicidencia";
 
 export const createIncident = async (formData) => {
   try {
