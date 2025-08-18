@@ -52,7 +52,7 @@ const AttendancesTab = ({ attendanceHistory, statistics, loading }) => {
             <div className="card-body text-center py-4">
               <CheckCircle size={32} className="text-success mb-3" />
               <h4 className="fw-bold text-success mb-1">{statistics.asistencias ?? 0}</h4>
-              <small className="text-success opacity-75 fw-medium">Asistencias</small>
+              <small className="text-success opacity-75 fw-medium">Puntuales</small>
             </div>
           </div>
         </div>

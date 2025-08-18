@@ -197,7 +197,7 @@ export const usePinAttendance = (usuario, attendanceHistory = [], fetchAttendanc
 
       const distance = getDistanceInMeters(parseFloat(lat), parseFloat(lng), currentCoords.latitude, currentCoords.longitude);
       hideLoader();
-      if (distance > 100) return showError("Estás fuera del rango de la ubicación esperada.");
+      if (distance > 500) return showError("Estás fuera del rango de la ubicación esperada.");
 
       await registerAttendance(status, currentCoords);
       setShowPINModal(false);
