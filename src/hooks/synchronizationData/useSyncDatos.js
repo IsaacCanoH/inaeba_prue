@@ -14,17 +14,27 @@ export const useSyncData = (usuario, isOffline) => {
   const handlerRef = useRef(null);
   const alreadySynced = useRef(false);
   const isSyncing = useRef(false);
+
+  const loaderTimerRef = useRef(null);
+  const loaderShownRef = useRef(false);
+
   const currentUserId = usuario?.user?.empleado_id;
 
   const sync = useCallback(async () => {
     if (!currentUserId || isSyncing.current || isOffline) return;
 
     isSyncing.current = true;
-    showLoader("Sincronizando datos pendientes...");
+    loaderShownRef.current = false;
+
+    loaderTimerRef.current = setTimeout(() => {
+      showLoader("Sincronizando datos pendientes...");
+      loaderShownRef.current = true;
+    }, 400);
 
     let count = 0;
     try {
       count = await syncPendingData(currentUserId, createNotification);
+
       if (count > 0) {
         showSuccess(`Se sincronizaron ${count} dato(s) pendiente(s).`);
       }
@@ -32,9 +42,16 @@ export const useSyncData = (usuario, isOffline) => {
       console.error("Error al sincronizar datos:", err?.message || err);
       showError("Error al sincronizar datos pendientes.");
     } finally {
-      hideLoader();
-      isSyncing.current = false;
+      if (loaderTimerRef.current) {
+        clearTimeout(loaderTimerRef.current);
+        loaderTimerRef.current = null;
+      }
+      if (loaderShownRef.current) {
+        hideLoader();
+        loaderShownRef.current = false;
+      }
 
+      isSyncing.current = false;
       bumpSync();
 
       try {
@@ -43,8 +60,8 @@ export const useSyncData = (usuario, isOffline) => {
             detail: { userId: currentUserId, count },
           })
         );
-      } catch (e) {
-        // silencioso por seguridad
+      } catch {
+        /* no-op */
       }
     }
   }, [currentUserId, isOffline, createNotification, showSuccess, showError, bumpSync, showLoader, hideLoader]);
