@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import DashboardHeader from "../components/Dashboard/DashboardHeader"
 import DashboardTabs from "../components/Dashboard/DashboardTabs"
@@ -33,12 +33,12 @@ const DashboardPage = () => {
   const { ok } = useNetworkReachability({ url: "/api/health", intervalMs: 5000, timeoutMs: 2500 })
   const isOffline = !ok
 
-    useEffect(() => {
-      if (ok && usuario?.offline) {
-        const updated = { ...usuario, offline: false }
-        localStorage.setItem("usuario", JSON.stringify(updated))
-      }
-    }, [ok]) 
+  useEffect(() => {
+    if (ok && usuario?.offline) {
+      const updated = { ...usuario, offline: false }
+      localStorage.setItem("usuario", JSON.stringify(updated))
+    }
+  }, [ok])
 
   useEffect(() => {
     if (!usuario) {
@@ -77,6 +77,22 @@ const DashboardPage = () => {
     }
   }, [usuario?.user?.empleado_id, fetchNotifications, isOffline])
 
+  //------------------------------------------------------
+  const isMobileDevice = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    const ua = navigator.userAgent || "";
+    const uaData = navigator.userAgentData;
+
+    const isIpadOS = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+
+    const mobileRegex = /Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry|IEMobile|Opera Mini/i;
+
+    const isCoarse = typeof window !== "undefined" &&
+      window.matchMedia?.("(pointer: coarse)")?.matches;
+
+    return Boolean(uaData?.mobile) || isIpadOS || mobileRegex.test(ua) || isCoarse;
+  }, []);
+
   //-------------------- Asistencias --------------------
   const [activeTab, setActiveTab] = useState("attendances")
   const { attendanceHistory, statistics, fetchAttendances, loading: loadingAttendances } = useAttendances(usuario, isOffline)
@@ -108,8 +124,13 @@ const DashboardPage = () => {
     handleFaceFailure,
   } = useQrAndFace(usuario, attendanceHistory, fetchAttendances)
 
-  // const registrarAsistencia = () => setShowPINModal(true)
-  const registrarAsistencia = () => handleOpenCamera();
+  const registrarAsistencia = () => {
+    if (isMobileDevice) {
+      handleOpenCamera();
+    } else {
+      setShowPINModal(true);
+    }
+  };
 
   //-------------------- Incidencias --------------------
   const {

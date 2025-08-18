@@ -45,9 +45,14 @@ export const NotificationProvider = ({ children }) => {
       } else {
         data = await getNotificationsByUser(userId);
         await saveNotificationsOffline(data);
+        cleanupReadOverlayFromServer(data);
       }
+      const readMap = getReadMap();
       const hidden = getHiddenNotifications();
-      const visible = data.filter((n) => !hidden.includes(n.notificacion_id));
+      const withRead = data.map((n) =>
+        readMap[n.notificacion_id] ? { ...n, leida: true } : n
+      );
+      const visible = withRead.filter((n) => !hidden.includes(n.notificacion_id));
       setNotifications(visible);
     } catch (err) {
       console.error("Error al obtener notificaciones:", err.message);
@@ -82,11 +87,13 @@ export const NotificationProvider = ({ children }) => {
   const markAsRead = useCallback(async (id) => {
     try {
       await markNotificationAsRead(id);
+    } catch (err) {
+      console.error("Error al marcar como leída:", err.message);
+    } finally {
+      addReadLocal(id);
       setNotifications((prev) =>
         prev.map((n) => (n.notificacion_id === id ? { ...n, leida: true } : n))
       );
-    } catch (err) {
-      console.error("Error al marcar como leída:", err.message);
     }
   }, []);
 
@@ -100,18 +107,24 @@ export const NotificationProvider = ({ children }) => {
           )
         )
       );
-      setNotifications((prev) => prev.map((n) => ({ ...n, leida: true })));
     } catch (err) {
       console.error("Error al marcar todas como leídas:", err.message);
+    } finally {
+      const unread = deferredNotifications.filter((n) => !n.leida);
+      unread.forEach((n) => addReadLocal(n.notificacion_id));
+      setNotifications((prev) => prev.map((n) => ({ ...n, leida: true })));
     }
   }, [deferredNotifications]);
+
 
   const deleteNotification = useCallback(async (id) => {
     try {
       await markNotificationAsView(id);
-      setNotifications((prev) => prev.filter((n) => n.notificacion_id !== id));
     } catch (err) {
       console.error("Error al marcar notificación como vista:", err.message);
+    } finally {
+      addHiddenLocal(id);
+      setNotifications((prev) => prev.filter((n) => n.notificacion_id !== id));
     }
   }, []);
 
@@ -177,11 +190,39 @@ export const NotificationProvider = ({ children }) => {
 
 export const useNotifications = () => useContext(NotificationContext);
 
+const READ_KEY = "readNotifications";
+const HIDDEN_KEY = "hiddenNotifications";
+
+const getReadMap = () => {
+  try { return JSON.parse(localStorage.getItem(READ_KEY)) || {}; }
+  catch { return {}; }
+};
+const setReadMap = (map) => localStorage.setItem(READ_KEY, JSON.stringify(map));
+const addReadLocal = (id) => {
+  const m = getReadMap();
+  if (!m[id]) { m[id] = true; setReadMap(m); }
+};
+
 const getHiddenNotifications = () => {
-  try {
-    return JSON.parse(localStorage.getItem("hiddenNotifications")) || [];
-  } catch (err) {
-    console.warn("Error leyendo hiddenNotifications:", err);
-    return [];
+  try { return JSON.parse(localStorage.getItem(HIDDEN_KEY)) || []; }
+  catch { return []; }
+};
+const addHiddenLocal = (id) => {
+  const arr = getHiddenNotifications();
+  if (!arr.includes(id)) {
+    arr.push(id);
+    localStorage.setItem(HIDDEN_KEY, JSON.stringify(arr));
   }
+};
+
+const cleanupReadOverlayFromServer = (serverData) => {
+  const map = getReadMap();
+  let touched = false;
+  for (const n of serverData) {
+    if (n.leida === true && map[n.notificacion_id]) {
+      delete map[n.notificacion_id];
+      touched = true;
+    }
+  }
+  if (touched) setReadMap(map);
 };
