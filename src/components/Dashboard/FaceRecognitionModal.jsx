@@ -2,8 +2,8 @@ import Webcam from "react-webcam"
 import { useFaceRecognition } from "../../hooks/useFaceRecognition"
 import "../../styles/face.modal.css"
 
-const FaceRecognitionModal = ({ show, onSuccess, onFailure, usuario, onClose }) => {
-  const { webcamRef, feedback, loadingFace } = useFaceRecognition({ show, usuario, onSuccess, onFailure })
+const FaceRecognitionModal = ({ show, onSuccess, onFailure, usuario, onClose, isOffline }) => {
+  const { webcamRef, feedback, loadingFace } = useFaceRecognition({ show, usuario, onSuccess, onFailure, isOffline })
 
   if (!show) return null
 

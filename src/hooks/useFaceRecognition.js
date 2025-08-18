@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
-import { compareDescriptors } from "../services/faceApiService";
+import { compareDescriptors, loadModels } from "../services/faceApiService";
 import {
   getFacePhoto,
   getLocalFace,
@@ -32,6 +32,10 @@ export const useFaceRecognition = ({ show, usuario, onSuccess, onFailure, isOffl
       faceapi.nets?.tinyFaceDetector?.isLoaded &&
       faceapi.nets?.faceLandmark68Net?.isLoaded &&
       faceapi.nets?.faceRecognitionNet?.isLoaded;
+
+    if (!loaded()) {
+      try { await loadModels(); } catch { }
+    }
 
     while (!loaded() && Date.now() - start < timeoutMs) {
       await new Promise((r) => setTimeout(r, 100));
@@ -171,14 +175,14 @@ export const useFaceRecognition = ({ show, usuario, onSuccess, onFailure, isOffl
     if (typeof desc === "string") {
       try {
         return new Float32Array(JSON.parse(desc));
-      } catch {}
+      } catch { }
     }
     throw new Error("Formato de descriptor desconocido");
   };
 
   const captureAndCompareFace = async () => {
     processingRef.current = true;
-    let handedOff = false; 
+    let handedOff = false;
     showLoader("Comparando rostros...");
     try {
       setFeedback("Procesando rostro, por favor espere...");
