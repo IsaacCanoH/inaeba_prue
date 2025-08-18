@@ -22,8 +22,9 @@ export const useSyncData = (usuario, isOffline) => {
     isSyncing.current = true;
     showLoader("Sincronizando datos pendientes...");
 
+    let count = 0;
     try {
-      const count = await syncPendingData(currentUserId, createNotification);
+      count = await syncPendingData(currentUserId, createNotification);
       if (count > 0) {
         showSuccess(`Se sincronizaron ${count} dato(s) pendiente(s).`);
       }
@@ -33,7 +34,18 @@ export const useSyncData = (usuario, isOffline) => {
     } finally {
       hideLoader();
       isSyncing.current = false;
+
       bumpSync();
+
+      try {
+        window.dispatchEvent(
+          new CustomEvent("app:sync-finished", {
+            detail: { userId: currentUserId, count },
+          })
+        );
+      } catch (e) {
+        // silencioso por seguridad
+      }
     }
   }, [currentUserId, isOffline, createNotification, showSuccess, showError, bumpSync, showLoader, hideLoader]);
 

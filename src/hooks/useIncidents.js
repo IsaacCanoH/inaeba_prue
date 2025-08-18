@@ -14,6 +14,15 @@ export const useIncidents = (usuario, isOffline) => {
     }
   }, [usuario?.user?.empleado_id, isOffline])
 
+  useEffect(() => {
+    const handler = () => {
+      const empleadoId = usuario?.user?.empleado_id;
+      if (empleadoId) fetchIncidencias(empleadoId);
+    };
+    window.addEventListener("app:sync-finished", handler);
+    return () => window.removeEventListener("app:sync-finished", handler);
+  }, [usuario?.user?.empleado_id, isOffline]);
+
   const fetchIncidencias = async (empleadoId) => {
     try {
       setLoading(true);

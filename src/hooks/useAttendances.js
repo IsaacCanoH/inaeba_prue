@@ -8,7 +8,7 @@ import {
 export const useAttendances = (usuario, isOffline) => {
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [statistics, setStatistics] = useState({});
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
   const hasFetched = useRef(false);
 
   const fetchAttendances = async () => {
@@ -24,7 +24,7 @@ export const useAttendances = (usuario, isOffline) => {
     } catch (err) {
       console.error("Error al cargar asistencias:", err.message);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -33,6 +33,14 @@ export const useAttendances = (usuario, isOffline) => {
     hasFetched.current = true;
     fetchAttendances();
   }, [usuario, isOffline]);
+
+  useEffect(() => {
+    const onSynced = (e) => {
+      fetchAttendances();
+    };
+    window.addEventListener("app:sync-finished", onSynced);
+    return () => window.removeEventListener("app:sync-finished", onSynced);
+  }, [usuario?.user?.empleado_id, isOffline]); 
 
   return {
     attendanceHistory,
@@ -111,25 +119,25 @@ const processAttendanceHistory = (attendances) => {
 
     if (entrada === "puntual" && salida === "puntual") {
       item.estado_final = "puntual";
-    } 
+    }
     else if (entrada === "puntual" && salida === "incompleta") {
       item.estado_final = "incompleta";
-    } 
+    }
     else if (entrada === "puntual" && salida === "falta") {
       item.estado_final = "incompleta";
-    } 
+    }
     else if (entrada === "retardo" && salida === "puntual") {
       item.estado_final = "retardo";
-    } 
+    }
     else if (entrada === "retardo" && salida === "incompleta") {
       item.estado_final = "incompleta";
-    } 
+    }
     else if (entrada === "retardo" && salida === "falta") {
       item.estado_final = "incompleta";
-    } 
+    }
     else if (entrada === "falta" && salida === "falta") {
       item.estado_final = "falta";
-    } 
+    }
     else {
       item.estado_final = entrada || "falta";
     }
