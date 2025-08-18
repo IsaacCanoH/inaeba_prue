@@ -1,0 +1,27 @@
+/* Panel de notificaciones: desktop y mobile por defecto */
+.notificationsPanel {
+  width: 400px;
+  max-width: 95vw;
+  z-index: 1050;
+}
+
+/* Lista con scroll interno */
+.notificationList {
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+@media (max-width: 576px) {
+  .notificationsPanel {
+    width: 90vw !important;   
+    max-width: 90vw !important;
+    right: -70px !important;  
+    left: auto !important;   
+  }
+
+  .notificationList {
+    max-height: 300px;
+  }
+}
