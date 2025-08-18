@@ -31,8 +31,14 @@ const DashboardPage = () => {
   const storedUser = localStorage.getItem("usuario")
   const usuario = storedUser ? JSON.parse(storedUser) : null
   const { ok } = useNetworkReachability({ url: "/api/health", intervalMs: 5000, timeoutMs: 2500 })
-  const isOffline = (usuario?.offline === true) || !ok
+  const isOffline = !ok
 
+    useEffect(() => {
+      if (ok && usuario?.offline) {
+        const updated = { ...usuario, offline: false }
+        localStorage.setItem("usuario", JSON.stringify(updated))
+      }
+    }, [ok]) 
 
   useEffect(() => {
     if (!usuario) {
@@ -53,8 +59,8 @@ const DashboardPage = () => {
   const {
     notificationRef,
     showNotifications,
-    toggleNotifications,   
-    closeNotifications,    
+    toggleNotifications,
+    closeNotifications,
     notifications,
     unreadCount,
     fetchNotifications,
@@ -73,7 +79,7 @@ const DashboardPage = () => {
 
   //-------------------- Asistencias --------------------
   const [activeTab, setActiveTab] = useState("attendances")
-  const { attendanceHistory, statistics, fetchAttendances, loading: loadingAttendances  } = useAttendances(usuario, isOffline)
+  const { attendanceHistory, statistics, fetchAttendances, loading: loadingAttendances } = useAttendances(usuario, isOffline)
   useFaltasAuto(usuario, isOffline, fetchAttendances)
 
   //----------------------- PIN -------------------------
@@ -137,8 +143,8 @@ const DashboardPage = () => {
         usuario={usuario}
         unreadCount={unreadCount}
         showNotifications={showNotifications}
-        toggleNotifications={toggleNotifications}   
-        closeNotifications={closeNotifications}     
+        toggleNotifications={toggleNotifications}
+        closeNotifications={closeNotifications}
         notificationRef={notificationRef}
         notifications={notifications}
         markAllAsRead={markAllAsRead}
