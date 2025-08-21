@@ -1,7 +1,6 @@
 import { FileText, Calendar, AlertCircle, Download, Eye } from "lucide-react"
 
 const IncidenciasTab = ({
-  usuario,
   isOffline,
   incidencias,
   selectedIncidencia,

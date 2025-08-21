@@ -221,9 +221,9 @@ export const useFaceRecognition = ({ show, usuario, onSuccess, onFailure, isOffl
 
       if (!isOffline) {
         await saveFacePhoto({
-          usuario_id: usuario.user.empleado_id,
-          imagen_base64: imageBase64,
-          descriptor: descriptorArray,
+           usuario_id: usuario.user.empleado_id,
+           imagen_base64: imageBase64,
+           descriptor: descriptorArray,
         });
         setFeedback("Rostro registrado correctamente");
         hideLoader();

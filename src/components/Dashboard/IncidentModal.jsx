@@ -7,8 +7,7 @@ const IncidentModal = ({
   handleSubmitIncident,
   setShowIncidentModal,
   incidentTypes,
-  eligibleDates = [],
-  filteredAttendances
+  eligibleDates = []
 }) => {
   return (
     <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>

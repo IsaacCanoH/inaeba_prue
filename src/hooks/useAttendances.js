@@ -65,10 +65,6 @@ const fetchAttendanceData = async (employeeId, isOffline) => {
 const processAttendanceHistory = (attendances) => {
   const grouped = {};
 
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
   attendances.forEach((record) => {
     const date = new Date(record.fecha_hora_registro);
 
